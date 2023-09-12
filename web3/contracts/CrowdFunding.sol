@@ -37,15 +37,36 @@ contract MyContract {
     }
 
     function donateTocompaign (uint256 _id) public payable {
+        uint256 amount = msg.value;
+
+        Compaign storage compaign = compaigns[_id];
+
+        compaign.donators.push(msg.sender);
+        campaigns.donations.push(amount);
+
+        (bool sent, ) = payable(compaign.owner).call{value: amount}("");
+
+        if(sent) {
+            compaign.amountCollected = compaign.amountCollected + amount;
+        }
 
     }
 
-    function getDonators() {
+    function getDonators(uint256 _id) view public return(address[] memory, uint256[] memory){
 
+        return (compaigns[_id].donators, compaigns[_id].donations);
     }
 
-    function getCompaigns() {
+    function getCompaigns() public view return (Compaign[] memory) {
+        Campaign[] memory allCompaigns = new Campaign[](numberOfCampaigns);
 
+        for(uint i = 0; i< numberOfCampaigns; i++) {
+            Compaign storage item = compaigns[i];
+
+            allCompaigns[i] = item;
+        }
+
+        return allCompaigns;
     }
-    constructor() {}
+    
 }
