@@ -19,54 +19,54 @@ contract MyContract {
     uint256 public numberOfCampaigns = 0;
 
     function createCampaign(address _owner, string memory _title, string memory _description, uint256 _target, uint256 _deadline, string memory _image) public returns (uint256) {
-        Campaign storage compaign = compaigns[numberOfCampaigns];
+        Campaign storage campaign = campaigns[numberOfCampaigns];
 
-        require(compaign.deadline < block.timestamp, "The deadline should be a date in futute");
+        require(campaign.deadline < block.timestamp, "The deadline should be a date in futute");
 
-        compaign.owner = _owner;
-        compaign.title = _title;
-        compaign.description = _description;
-        compaign.target = _target;
-        compaign.deadline = _deadline;
-        compaign.amountCollected = 0;
-        compaign.image = _image;
+        campaign.owner = _owner;
+        campaign.title = _title;
+        campaign.description = _description;
+        campaign.target = _target;
+        campaign.deadline = _deadline;
+        campaign.amountCollected = 0;
+        campaign.image = _image;
         
         numberOfCampaigns++;
 
         return numberOfCampaigns-1;
     }
 
-    function donateTocompaign (uint256 _id) public payable {
+    function donateTocampaign (uint256 _id) public payable {
         uint256 amount = msg.value;
 
-        Compaign storage compaign = compaigns[_id];
+        Campaign storage campaign = campaigns[_id];
 
-        compaign.donators.push(msg.sender);
-        campaigns.donations.push(amount);
+        campaign.donators.push(msg.sender);
+        campaign.donations.push(amount);
 
-        (bool sent, ) = payable(compaign.owner).call{value: amount}("");
+        (bool sent, ) = payable(campaign.owner).call{value: amount}("");
 
         if(sent) {
-            compaign.amountCollected = compaign.amountCollected + amount;
+            campaign.amountCollected = campaign.amountCollected + amount;
         }
 
     }
 
-    function getDonators(uint256 _id) view public return(address[] memory, uint256[] memory){
+    function getDonators(uint256 _id) view public returns(address[] memory, uint256[] memory){
 
-        return (compaigns[_id].donators, compaigns[_id].donations);
+        return (campaigns[_id].donators, campaigns[_id].donations);
     }
 
-    function getCompaigns() public view return (Compaign[] memory) {
-        Campaign[] memory allCompaigns = new Campaign[](numberOfCampaigns);
+    function getcampaigns() public view returns (Campaign[] memory) {
+        Campaign[] memory allcampaigns = new Campaign[](numberOfCampaigns);
 
         for(uint i = 0; i< numberOfCampaigns; i++) {
-            Compaign storage item = compaigns[i];
+            Campaign storage item = campaigns[i];
 
-            allCompaigns[i] = item;
+            allcampaigns[i] = item;
         }
 
-        return allCompaigns;
+        return allcampaigns;
     }
     
 }
