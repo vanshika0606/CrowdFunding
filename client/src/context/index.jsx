@@ -5,6 +5,7 @@ import {
   useContract,
   useMetamask,
   useContractWrite,
+  useContractRead
 } from "@thirdweb-dev/react";
 import { ethers } from "ethers";
 
@@ -18,6 +19,7 @@ export const StateContextProvider = ({ children }) => {
     contract,
     "createCampaign"
   );
+  const { data, isLoading } = useContractRead(contract, "getcampaigns")
 
   const address = useAddress();
   const connect = useMetamask();
@@ -25,25 +27,66 @@ export const StateContextProvider = ({ children }) => {
 
   const publishCampaign = async (form) => {
     try {
-      const data = await createCampaign([
-        address,
-        form.title,
-        form.description,
-        form.target,
-        new Date(form.deadline).getTime(),
-        form.image,
-      ]);
+      const data = await createCampaign({
+        args: [
+          address,
+          form.title,
+          form.description,
+          form.target,
+          new Date(form.deadline).getTime(),
+          form.image,
+        ],
+      });
       console.log("contract call success", data);
     } catch (error) {
       console.log("contract call failure", error);
     }
   };
 
+  const getCampaigns = async () => {
+    
+      if(!isLoading){
+
+        console.log("data: ", data);
+      }
+    // 
+
+    const parsedCampaings = data?.map((campaign, i) => ({
+      owner: campaign.owner,
+      title: campaign.title,
+      description: campaign.description,
+      target: ethers.utils.formatEther(campaign.target.toString()),
+      deadline: campaign.deadline.toNumber(),
+      amountCollected: ethers.utils.formatEther(campaign.amountCollected.toString()),
+      image: campaign.image,
+      pId: i
+    }));
+
+    // console.log(parsedCampaings);
+
+    return parsedCampaings;
+  }
+
+  const getUserCampaigns = async () => {
+    const allCampaigns = await getCampaigns();
+
+    const filteredCampaigns = allCampaigns.filter((campaign) => campaign.owner === address);
+
+    return filteredCampaigns;
+  }
+
+  const donate = async (pId, amount) => {
+    const data = await contract.call('donateToCampaign', [pId], { value: ethers.utils.parseEther(amount)});
+
+    return data;
+  }
+
+
   return (
     <StateContext.Provider
-      value={{ address, contract, connect, createCampaign: publishCampaign }}
+      value={{ address, contract, connect, createCampaign: publishCampaign, getCampaigns, getUserCampaigns }}
     >
-        {children}
+       {children}
     </StateContext.Provider>
   );
 };

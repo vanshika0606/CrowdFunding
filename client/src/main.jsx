@@ -9,7 +9,7 @@ import { StateContextProvider } from "./context/index.jsx";
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-  <ThirdwebProvider desiredChainId={ChainId.Mumbai}> 
+  <ThirdwebProvider activeChain={ChainId.Mumbai} clientId={import.meta.env.VITE_TEMPLATE_CLIENT_ID}> 
     <Router>
       <StateContextProvider >
         <App />
