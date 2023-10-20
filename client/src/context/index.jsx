@@ -20,6 +20,9 @@ export const StateContextProvider = ({ children }) => {
     "createCampaign"
   );
   const { data, isLoading } = useContractRead(contract, "getcampaigns")
+  // console.log("data : ", data);
+  // console.log("isLoading: ", isLoading);
+
 
   const address = useAddress();
   const connect = useMetamask();
@@ -46,11 +49,9 @@ export const StateContextProvider = ({ children }) => {
   const getCampaigns = async () => {
     
       if(!isLoading){
-
-        console.log("data: ", data);
+        console.log(data);
       }
-    // 
-
+    
     const parsedCampaings = data?.map((campaign, i) => ({
       owner: campaign.owner,
       title: campaign.title,
@@ -84,7 +85,7 @@ export const StateContextProvider = ({ children }) => {
 
   return (
     <StateContext.Provider
-      value={{ address, contract, connect, createCampaign: publishCampaign, getCampaigns, getUserCampaigns }}
+      value={{ address, contract, connect, createCampaign: publishCampaign, getCampaigns, getUserCampaigns, isLoading, data}}
     >
        {children}
     </StateContext.Provider>
