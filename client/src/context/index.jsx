@@ -13,12 +13,14 @@ const StateContext = createContext();
 
 export const StateContextProvider = ({ children }) => {
   const { contract } = useContract(
-    "0x0CdE956a1fa76844B4c8371C5E020563CeE5Dae4"
+    "0xDFEeb3199738aD5F76ad31472862E71078777F6B"
   );
   const { mutateAsync: createCampaign } = useContractWrite(
     contract,
     "createCampaign"
   );
+  const { mutateAsync: deleteCampaign} = useContractWrite(contract, "deleteCampaign")
+
   const { data, isLoading } = useContractRead(contract, "getcampaigns");
   // console.log("data : ", data);
   // console.log("isLoading: ", isLoading);
@@ -101,6 +103,15 @@ export const StateContextProvider = ({ children }) => {
     return parsedDonations;
   };
 
+  const campaignDelete = async(Id)=>{
+    try {
+      const data = await deleteCampaign({ args: [Id] });
+      console.info("contract call successs", data);
+    } catch (err) {
+      console.error("contract call failure", err);
+    }
+  }
+
   return (
     <StateContext.Provider
       value={{
@@ -112,6 +123,7 @@ export const StateContextProvider = ({ children }) => {
         getUserCampaigns,
         isLoading,
         data,
+        deleteCampaign: campaignDelete,
         getDonations,
         donate,
       }}

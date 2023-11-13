@@ -68,5 +68,21 @@ contract MyContract {
 
         return allcampaigns;
     }
+
+
+   function deleteCampaign(uint256 _id) public returns (Campaign[] memory) {
+        require(_id < numberOfCampaigns, "Invalid campaign ID");
+        delete campaigns[_id];
+        Campaign[] memory remainingCampaigns = new Campaign[](numberOfCampaigns - 1);
+        uint256 index = 0;
+        for (uint256 i = 0; i < numberOfCampaigns; i++) {
+            if (i != _id) {
+                remainingCampaigns[index] = campaigns[i];
+                index++;
+            }
+        }
+        numberOfCampaigns--;
+        return remainingCampaigns;
+        }
     
 }

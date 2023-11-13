@@ -10,7 +10,7 @@ import { checkIfImage } from "../utils";
 const CreateCampaign = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const { createCampaign} = useStateContext();
+  const { createCampaign } = useStateContext();
   const [form, setForm] = useState({
     name: "",
     title: "",
@@ -22,26 +22,35 @@ const CreateCampaign = () => {
   const handleFormFieldChange = (fieldName, e) => {
     setForm({ ...form, [fieldName]: e.target.value })
   }
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    checkIfImage(form.image, async(exists)=>{
-      if(exists){
+    checkIfImage(form.image, async (exists) => {
+      if (exists) {
         setIsLoading(true);
-        await createCampaign({...form, target: ethers.utils.parseUnits(form.target, 18)});
+        await createCampaign({ ...form, target: ethers.utils.parseUnits(form.target, 18) });
         setIsLoading(false);
         navigate('/');
-      }else{
+      } else {
         alert("provide valid image URL");
-        setForm({ ...form, image:''});
+        setForm({ ...form, image: '' });
       }
     })
 
     console.log(form);
   };
+
+  const disablePastDate = () => {
+    const today = new Date();
+    const dd = String(today.getDate() + 1).padStart(2, "0");
+    const mm = String(today.getMonth() + 1).padStart(2, "0"); //January is 0! 
+    const yyyy = today.getFullYear();
+    return yyyy + "-" + mm + "-" + dd;
+  };
+
   return (
     <div className="bg-[#1c1c24] flex justify-center items-center flex-col rounded-[10px] sm:p-10 p-4">
-      {isLoading && <Loader/>}
+      {isLoading && <Loader />}
       <div className="flex justify-center items-center p-[16px]  sm:min-w-[380px] bg-[#3a3a43] rounded-[10px]">
         <h1 className="font-epilogue font-bold sm:text-[25px] text-[18px] leading-[38px] text-white ">
           Start a campaign
@@ -78,7 +87,7 @@ const CreateCampaign = () => {
           value={form.description}
           handleChange={(e) => handleFormFieldChange('description', e)}
         />
-        
+
         <div className="w-full flex justify-start items-center p-4 bg-[#8c6dfd] h-[120px] rounded-[10px]">
           <img
             src={money}
@@ -98,13 +107,23 @@ const CreateCampaign = () => {
             value={form.target}
             handleChange={(e) => handleFormFieldChange('target', e)}
           />
-          <FormField
-            labelName="End Date *"
-            placeholder="End Date"
-            inputType="date"
-            value={form.deadline}
-             handleChange={(e) => handleFormFieldChange('deadline', e)}
-          />
+          <label className="flex-1 w-full flex flex-col">
+            <span className="font-epilogue font-medium text-[14px] leading-[22px] text-[#808191] mb-[10px]">
+              End Date *
+            </span>
+            <input
+              required
+              labelName="End Date *"
+              placeholder="End Date"
+              inputType="date"
+              value={form.deadline}
+              min={disablePastDate()}
+              onChange={(e) => handleFormFieldChange("deadline", e)}
+              type="date"
+              step="0.1"
+              className="py-[15px] sm:px-[25px] px-[15px] outline-none border-[1px] border-[#3a3a43] bg-transparent font-epilogue text-white text-[14px] placeholder:text-[#4b5264] rounded-[10px] sm:min-w-[300px]"
+            />
+          </label>
         </div>
 
         <FormField
