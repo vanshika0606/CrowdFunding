@@ -12,16 +12,24 @@ contract MyContract {
         string image;
         address[] donators;
         uint256[] donations;
+        uint256 creationTime;
+        string[] donationHash;
     }
+
+
 
     mapping(uint256 => Campaign)  public campaigns;
 
     uint256 public numberOfCampaigns = 0;
 
+    function updateDonationHash(uint256 _campaignId, string memory _transactionHash) public {
+        Campaign storage campaign = campaigns[_campaignId];
+        campaign.donationHash.push(_transactionHash);
+    }
+
     function createCampaign(address _owner, string memory _title, string memory _description, uint256 _target, uint256 _deadline, string memory _image) public returns (uint256) {
         Campaign storage campaign = campaigns[numberOfCampaigns];
 
-        require(campaign.deadline < block.timestamp, "The deadline should be a date in futute");
 
         campaign.owner = _owner;
         campaign.title = _title;
@@ -30,6 +38,7 @@ contract MyContract {
         campaign.deadline = _deadline;
         campaign.amountCollected = 0;
         campaign.image = _image;
+        campaign.creationTime = block.timestamp;
         
         numberOfCampaigns++;
 
@@ -52,9 +61,9 @@ contract MyContract {
 
     }
 
-    function getDonators(uint256 _id) view public returns(address[] memory, uint256[] memory){
+    function getDonators(uint256 _id) view public returns(address[] memory, uint256[] memory, string[] memory){
 
-        return (campaigns[_id].donators, campaigns[_id].donations);
+        return (campaigns[_id].donators, campaigns[_id].donations, campaigns[_id].donationHash);
     }
 
     function getcampaigns() public view returns (Campaign[] memory) {

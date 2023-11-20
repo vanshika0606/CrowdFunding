@@ -12,8 +12,17 @@ const FundCard = ({
   amountCollected,
   image,
   handleClick,
+  creationTime,
 }) => {
+  console.log(new Date(creationTime * 1000));
   const remainingDays = daysLeft(deadline);
+  var dateObject = new Date(creationTime * 1000);
+  var formattedDate = ` ${dateObject.getDate()}-${dateObject.getMonth()}-${dateObject.getFullYear()} `;
+  // var formattedDate = dateObject.toLocaleDateString("en-US", {
+  //   year: "numeric",
+  //   month: "short",
+  //   day: "numeric",
+  // });
 
   return (
     <div
@@ -64,16 +73,16 @@ const FundCard = ({
             />
           </div>
           <p className="flex-1 font-epilogue font-normal text-[12px] text-[#808191] truncate">
-            by <span className="text-[#b2b3bd]">{owner}</span>
+            By <span className="text-[#b2b3bd]">{owner}</span>
           </p>
         </div>
         <div className="flex flex-col">
-          <p className="mt-[3px] font-epilogue font-normal text-[12px] leading-[18px] text-[#808191] sm:max-w-[120px] truncate">
-            Created At
-          </p>
           <h4 className="font-epilogue font-semibold text-[14px] text-[#b2b3bd] leading-[22px]">
-            Time
+            Created At
           </h4>
+          <p className="mt-[3px] font-epilogue font-normal text-[12px] leading-[18px] text-[#808191] sm:max-w-[120px] truncate">
+            {formattedDate}
+          </p>
         </div>
       </div>
     </div>

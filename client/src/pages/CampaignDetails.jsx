@@ -6,7 +6,80 @@ import { useStateContext } from "../context";
 import { CountBox, CustomButton, Loader } from "../components";
 import { calculateBarPercentage, daysLeft } from "../utils";
 import { thirdweb } from "../assets";
-
+// const detail = [
+//   {
+//     blockNumber: "42353296",
+//     timeStamp: "1699889498",
+//     hash: "0x6cd5b6a4a08220d8039c4c317d6ae58a555b138173795dad2913a8a7b6d073b6",
+//     nonce: "234",
+//     blockHash:
+//       "0x58213469eb1c9a5ea01b665ad2547854cc3ed2dbba04e7fdff1cd29d0e8da6a8",
+//     transactionIndex: "65",
+//     from: "0x3db3827962243d4252c43b1dfca1b801d1d125f1",
+//     to: "0x09472583922bc5508f762326aed66cb65216041c",
+//     value: "100000000000000",
+//     gas: "141381",
+//     gasPrice: "3044248580",
+//     isError: "0",
+//     txreceipt_status: "1",
+//     input:
+//       "0x9db00d530000000000000000000000000000000000000000000000000000000000000000",
+//     contractAddress: "",
+//     cumulativeGasUsed: "11656637",
+//     gasUsed: "141381",
+//     confirmations: "626",
+//     methodId: "0x9db00d53",
+//     functionName: "donateTocampaign(uint256 _id)",
+//   },
+//   {
+//     blockNumber: "42353400",
+//     timeStamp: "1699889718",
+//     hash: "0xcf86a54e9d34fc3cf4ccb4fce7a52b79c82959de7884d39b1a79fcab477483d2",
+//     nonce: "236",
+//     blockHash:
+//       "0xb5f9be72b90bb5feea693eba8e8da6dfb0d4dd99bcbf9e0c585f5ad65bae9b44",
+//     transactionIndex: "3",
+//     from: "0x3db3827962243d4252c43b1dfca1b801d1d125f1",
+//     to: "0x09472583922bc5508f762326aed66cb65216041c",
+//     value: "100000000000000",
+//     gas: "90081",
+//     gasPrice: "1500000016",
+//     isError: "0",
+//     txreceipt_status: "1",
+//     input:
+//       "0x9db00d530000000000000000000000000000000000000000000000000000000000000000",
+//     contractAddress: "",
+//     cumulativeGasUsed: "1910385",
+//     gasUsed: "90081",
+//     confirmations: "522",
+//     methodId: "0x9db00d53",
+//     functionName: "donateTocampaign(uint256 _id)",
+//   },
+//   {
+//     blockNumber: "42353782",
+//     timeStamp: "1699890530",
+//     hash: "0x32cb4aa3241c1af910009a60e8d0cc30fede98176c21394be3c226df16d47c88",
+//     nonce: "238",
+//     blockHash:
+//       "0x0da2ab963b3784a0ab202bf7d3698068b0201d65028667c36e5155dcffc770a6",
+//     transactionIndex: "1",
+//     from: "0x3db3827962243d4252c43b1dfca1b801d1d125f1",
+//     to: "0x09472583922bc5508f762326aed66cb65216041c",
+//     value: "10000000000000",
+//     gas: "90081",
+//     gasPrice: "2061720444",
+//     isError: "0",
+//     txreceipt_status: "1",
+//     input:
+//       "0x9db00d530000000000000000000000000000000000000000000000000000000000000000",
+//     contractAddress: "",
+//     cumulativeGasUsed: "156998",
+//     gasUsed: "90081",
+//     confirmations: "140",
+//     methodId: "0x9db00d53",
+//     functionName: "donateTocampaign(uint256 _id)",
+//   },
+// ];
 const CampaignDetails = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -16,16 +89,54 @@ const CampaignDetails = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const [donators, setDonators] = useState([]);
+  const [detail, setDetail] = useState([]);
 
   const remainingDays = daysLeft(state.deadline);
-  // console.log(remainingDays)
+
+  function formatDate(creationTime) {
+    // var dateObject = new Date(Date(creationTime));
+
+    // var formattedDate = dateObject.toLocaleDateString("en-US", {
+    //   year: "numeric",
+    //   month: "short",
+    //   day: "numeric",
+    // });
+    var dateObject = new Date(creationTime * 1000);
+    var formattedDate = ` ${dateObject.getDate()}-${dateObject.getMonth()}-${dateObject.getFullYear()} at ${dateObject.getHours()}:${dateObject.getMinutes()}`;
+    return formattedDate;
+  }
+
+  const getTransactions = async (donationData) => {
+    try {
+      const res = await fetch(
+        "https://api-testnet.polygonscan.com/api?module=account&action=txlist&address=0x09472583922Bc5508F762326AEd66CB65216041c&startblock=0&endblock=99999999&sort=asc&apikey=WK2IJGHTAH84YPURVJBTUK6FT918FDF7PG",
+        {
+          method: "GET",
+        }
+      );
+      console.log("Response: ", res);
+
+      if (res.ok) {
+        const transactions = await res.json();
+        const transactionData = transactions.result;
+
+        const filteredTransaction = transactionData.filter((transaction) =>
+          donationData.includes(transaction.hash)
+        );
+
+        return filteredTransaction;
+      }
+    } catch (err) {
+      console.error("Error in fetching transactions: ", err);
+    }
+  };
 
   const fetchDonators = async () => {
-    const data = await getDonations(state.pId);
-
-    console.log(data);
-
-    setDonators(data);
+    const { parsedDonations, hash } = await getDonations(state.pId);
+    const transactionDetails = await getTransactions(hash);
+    console.log(transactionDetails);
+    setDetail(transactionDetails);
+    setDonators(parsedDonations);
   };
 
   useEffect(() => {
@@ -36,8 +147,8 @@ const CampaignDetails = () => {
     if (remainingDays !== 0) {
       setIsLoading(true);
 
-      await donate(state.pId, amount);
-
+      const data = await donate(state.pId, amount);
+      console.log("data", data);
       navigate("/");
       setIsLoading(false);
     }
@@ -124,17 +235,20 @@ const CampaignDetails = () => {
             </h4>
 
             <div className="mt-[20px] flex flex-col gap-4">
-              {donators.length > 0 ? (
-                donators.map((item, index) => (
+              {detail.length > 0 ? (
+                detail.map((item, index) => (
                   <div
                     key={`${item.donator}-${index}`}
                     className="flex justify-between items-center gap-4"
                   >
                     <p className="font-epilogue font-normal text-[16px] text-[#b2b3bd] leading-[26px] break-ll">
-                      {index + 1}. {item.donator}
+                      {index + 1}. {item.from}
                     </p>
                     <p className="font-epilogue font-normal text-[16px] text-[#808191] leading-[26px] break-ll">
-                      {item.donation}
+                      {ethers.utils.formatEther(item.value)}
+                    </p>
+                    <p className="font-epilogue font-normal text-[16px] text-[#808191] leading-[26px] break-ll">
+                      {formatDate(item.timeStamp)}
                     </p>
                   </div>
                 ))
