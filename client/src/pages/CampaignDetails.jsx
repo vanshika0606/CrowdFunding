@@ -144,13 +144,17 @@ const CampaignDetails = () => {
   }, [contract, address]);
 
   const handleDonate = async () => {
-    if (remainingDays !== 0) {
+    // console.log(remainingDays)
+    if (remainingDays != 0) {
+      // console.log("clicked")
       setIsLoading(true);
 
       const data = await donate(state.pId, amount);
       console.log("data", data);
       navigate("/");
       setIsLoading(false);
+    }else{
+     alert("Campaign Expired! 😶, you can't fund this campaign ")
     }
   };
 
