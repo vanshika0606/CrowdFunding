@@ -83,7 +83,7 @@ import { thirdweb } from "../assets";
 const CampaignDetails = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const { donate, getDonations, contract, address, deleteCampaign } =
+  const { donate, getDonations, contract, address, deleteCampaign, transactionTime, setCreateTime, createTime} =
     useStateContext();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +92,23 @@ const CampaignDetails = () => {
   const [detail, setDetail] = useState([]);
 
   const remainingDays = daysLeft(state.deadline);
+
+  const transactionCompletedTimeFunc = (milliSeconds)=>{
+    let minutes, seconds;
+    const transactionTimeInSeconds = milliSeconds/1000;
+    if(transactionTimeInSeconds >=60){
+        minutes = transactionTimeInSeconds / 60 ;
+        
+        seconds = transactionTimeInSeconds%60 ;
+
+        return `${minutes}m ${seconds}s`;
+        
+    }else{
+      seconds = transactionTimeInSeconds;
+      return `${seconds}s`;
+    }
+  
+  }
 
   function formatDate(creationTime) {
     // var dateObject = new Date(Date(creationTime));
@@ -102,14 +119,15 @@ const CampaignDetails = () => {
     //   day: "numeric",
     // });
     var dateObject = new Date(creationTime * 1000);
-    var formattedDate = ` ${dateObject.getDate()}-${dateObject.getMonth()}-${dateObject.getFullYear()} at ${dateObject.getHours()}:${dateObject.getMinutes()}`;
+    var time = dateObject.getTime();
+    var formattedDate = ` ${dateObject.getDate()}-${dateObject.getMonth()}-${dateObject.getFullYear()} at ${dateObject.getHours()}:${dateObject.getMinutes()}   `;
     return formattedDate;
   }
 
   const getTransactions = async (donationData) => {
     try {
       const res = await fetch(
-        "https://api-testnet.polygonscan.com/api?module=account&action=txlist&address=0x09472583922Bc5508F762326AEd66CB65216041c&startblock=0&endblock=99999999&sort=asc&apikey=WK2IJGHTAH84YPURVJBTUK6FT918FDF7PG",
+        "https://api-testnet.polygonscan.com/api?module=account&action=txlist&address=0x0aBB8f0A03ae116E30829FBbe092Ad6ef826FaE2&startblock=0&endblock=99999999&sort=asc&apikey=WK2IJGHTAH84YPURVJBTUK6FT918FDF7PG",
         {
           method: "GET",
         }
@@ -134,7 +152,7 @@ const CampaignDetails = () => {
   const fetchDonators = async () => {
     const { parsedDonations, hash } = await getDonations(state.pId);
     const transactionDetails = await getTransactions(hash);
-    console.log(transactionDetails);
+    console.log("transactionDetails: ",transactionDetails);
     setDetail(transactionDetails);
     setDonators(parsedDonations);
   };
@@ -143,18 +161,30 @@ const CampaignDetails = () => {
     if (contract) fetchDonators();
   }, [contract, address]);
 
+
+  console.log(transactionTime)
   const handleDonate = async () => {
     // console.log(remainingDays)
     if (remainingDays != 0) {
       // console.log("clicked")
       setIsLoading(true);
 
+      const dateBeforeTransaction = new Date();
+      const timeBeforeTransaction = dateBeforeTransaction.getTime();
       const data = await donate(state.pId, amount);
       console.log("data", data);
+      const dateAfterTransaction = new Date();
+      const timeAfterTransaction = dateAfterTransaction.getTime();
+
+      let timeInMilliSeconds = timeAfterTransaction - timeBeforeTransaction;
+
+      const time = transactionCompletedTimeFunc(timeInMilliSeconds);
+
+      alert(`Transaction Completed in ${time} !😁`)
       navigate("/");
       setIsLoading(false);
-    }else{
-     alert("Campaign Expired! 😶, you can't fund this campaign ")
+    } else {
+      alert("Campaign Expired! 😶, you can't fund this campaign ")
     }
   };
 
@@ -232,7 +262,6 @@ const CampaignDetails = () => {
               </p>
             </div>
           </div>
-
           <div>
             <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">
               Donators
@@ -240,7 +269,9 @@ const CampaignDetails = () => {
 
             <div className="mt-[20px] flex flex-col gap-4">
               {detail.length > 0 ? (
+              
                 detail.map((item, index) => (
+
                   <div
                     key={`${item.donator}-${index}`}
                     className="flex justify-between items-center gap-4"

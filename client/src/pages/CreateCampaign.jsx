@@ -10,7 +10,7 @@ import { checkIfImage } from "../utils";
 const CreateCampaign = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const { createCampaign } = useStateContext();
+  const { createCampaign, setCreateTime } = useStateContext();
   const [form, setForm] = useState({
     name: "",
     title: "",
@@ -47,6 +47,12 @@ const CreateCampaign = () => {
     const yyyy = today.getFullYear();
     return yyyy + "-" + mm + "-" + dd;
   };
+
+  const createCampaignClick= ()=>{
+    const date = new Date();
+    const time = date.getTime();
+    setCreateTime(time);
+  }
 
   return (
     <div className="bg-[#1c1c24] flex justify-center items-center flex-col rounded-[10px] sm:p-10 p-4">
@@ -139,6 +145,7 @@ const CreateCampaign = () => {
             btnType="submit"
             title="Submit new campaign"
             styles="bg-[#1dc071]"
+            handleClick={createCampaignClick}
           />
         </div>
       </form>

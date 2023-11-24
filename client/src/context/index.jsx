@@ -1,4 +1,4 @@
-import React, { useContext, createContext } from "react";
+import React, { useContext, createContext, useState } from "react";
 
 import {
   useAddress,
@@ -12,8 +12,9 @@ import { ethers } from "ethers";
 const StateContext = createContext();
 
 export const StateContextProvider = ({ children }) => {
+  let transactionCompletedTime;
   const { contract } = useContract(
-    "0x09472583922Bc5508F762326AEd66CB65216041c"
+    "0x0aBB8f0A03ae116E30829FBbe092Ad6ef826FaE2"
   );
   const { mutateAsync: createCampaign } = useContractWrite(
     contract,
@@ -27,6 +28,9 @@ export const StateContextProvider = ({ children }) => {
     contract,
     "updateDonationHash"
   );
+
+  const [createTime, setCreateTime]= useState(null);
+  const [transactionTime, setTransactionTime] = useState(null)
 
   const { data, isLoading } = useContractRead(contract, "getcampaigns");
   // console.log("data cont : ", data);
@@ -44,6 +48,23 @@ export const StateContextProvider = ({ children }) => {
     }
   };
 
+  const transactionCompletedTimeFunc = (milliSeconds)=>{
+    let minutes, seconds;
+    const transactionTimeInSeconds = milliSeconds/1000;
+    if(transactionTimeInSeconds >=60){
+        minutes = transactionTimeInSeconds / 60 ;
+        
+        seconds = transactionTimeInSeconds%60 ;
+
+        return `${minutes}m ${seconds}s`;
+        
+    }else{
+      seconds = transactionTimeInSeconds;
+      return `${seconds}s`;
+    }
+  
+  }
+
   const publishCampaign = async (form) => {
     try {
       const data = await createCampaign({
@@ -56,11 +77,20 @@ export const StateContextProvider = ({ children }) => {
           form.image,
         ],
       });
+      // const transactionCompletedDate = new Date();
+      // const time = transactionCompletedDate.getTime() - createTime;
+      // console.log(time);
+      // transactionCompletedTime = transactionCompletedTimeFunc(time);
+      // setTransactionTime(transactionCompletedTime);
+      // console.log("transaction Completed in ", transactionCompletedTime);
+      
       console.log("contract call success", data);
     } catch (error) {
       console.log("contract call failure", error);
     }
   };
+
+  
 
   const getCampaigns = async () => {
     if (!isLoading) {
@@ -128,6 +158,7 @@ export const StateContextProvider = ({ children }) => {
     }
   };
 
+  // console.log("createTime: ", createTime)
   return (
     <StateContext.Provider
       value={{
@@ -142,6 +173,9 @@ export const StateContextProvider = ({ children }) => {
         deleteCampaign: campaignDelete,
         getDonations,
         donate,
+        createTime,
+        setCreateTime,
+        transactionTime
       }}
     >
       {children}
@@ -150,3 +184,8 @@ export const StateContextProvider = ({ children }) => {
 };
 
 export const useStateContext = () => useContext(StateContext);
+
+
+
+
+
